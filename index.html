@@ -3,59 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Click para "Hola Mundo"</title>
+    <title>App Clima - Acceso Restringido</title>
+    <!-- Carga de Tailwind CSS para un diseño moderno y responsive -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Usamos Inter como fuente predeterminada */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        /* Definición de la fuente Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            cursor: pointer; /* Indica que la pantalla es interactiva */
+            transition: background-color 0.5s;
+        }
+        .weather-card {
+            min-height: 400px;
+            max-width: 600px;
         }
     </style>
 </head>
-<body class="bg-gray-900 flex items-center justify-center min-h-screen">
+<body class="bg-gray-900 flex items-center justify-center min-h-screen p-4">
 
-    <div id="message-container" class="text-center">
-        <!-- Mensaje Inicial, visible al cargar -->
-        <h2 id="initial-prompt" class="text-xl font-light text-gray-400 mb-8 animate-pulse">
-            Haz clic en cualquier parte de la pantalla para iniciar...
-        </h2>
+    <!-- Contenedor Principal -->
+    <div class="w-full max-w-md">
 
-        <!-- Mensaje "Hola Mundo", inicialmente oculto -->
-        <div id="hello-message" class="hidden transform transition-all duration-500 scale-90 opacity-0">
-            <h1 class="text-7xl font-extrabold text-white mb-4 shadow-lg">
-                ¡Hola Mundo!
-            </h1>
-            <p class="text-indigo-400 text-lg">
-                ¡Se ha ejecutado el evento de clic!
-            </p>
+        <!-- Tarjeta de Login (Inicialmente visible) -->
+        <div id="login-card" class="bg-gray-800 p-8 rounded-2xl shadow-2xl transition-all duration-500 transform scale-100 opacity-100">
+            <h1 class="text-3xl font-bold text-white mb-6 text-center">Acceso de Usuario</h1>
+            
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-400">Usuario</label>
+                    <input type="text" id="username" value="Pablo" required class="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-400">Clave</label>
+                    <input type="password" id="password" value="Cari" required class="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                
+                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                    Iniciar Sesión
+                </button>
+            </form>
+
+            <div id="message" class="mt-4 text-center text-red-400 hidden"></div>
         </div>
+
+        <!-- Tarjeta del Clima (Inicialmente oculta) -->
+        <div id="weather-card" class="weather-card hidden bg-gray-800 p-8 rounded-2xl shadow-2xl transition-all duration-500 transform scale-90 opacity-0 flex flex-col justify-between">
+            <div>
+                <h1 class="text-4xl font-extrabold text-indigo-400 mb-2">Bienvenido, Pablo</h1>
+                <p class="text-gray-400 mb-6">Aquí está el clima que buscabas.</p>
+                
+                <form id="city-form" class="flex mb-6 space-x-2">
+                    <input type="text" id="city-input" placeholder="Ej. Buenos Aires, Argentina" value="Buenos Aires, Argentina" class="flex-grow px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500">
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-150">Buscar</button>
+                </form>
+
+                <div id="weather-output" class="text-white text-lg bg-gray-700 p-4 rounded-lg shadow-inner">
+                    <!-- El resultado del clima se insertará aquí -->
+                    <p class="text-center text-gray-400">Cargando datos del clima...</p>
+                </div>
+            </div>
+            
+            <button id="logout-button" class="mt-6 w-full py-2 px-4 border border-transparent rounded-lg text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none transition duration-150 ease-in-out">
+                Cerrar Sesión
+            </button>
+        </div>
+
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const body = document.body;
-            const initialPrompt = document.getElementById('initial-prompt');
-            const helloMessage = document.getElementById('hello-message');
+        const VALID_USER = "Pablo";
+        const VALID_PASS = "Cari";
+        
+        const loginCard = document.getElementById('login-card');
+        const weatherCard = document.getElementById('weather-card');
+        const loginForm = document.getElementById('login-form');
+        const cityForm = document.getElementById('city-form');
+        const weatherOutput = document.getElementById('weather-output');
+        const messageDisplay = document.getElementById('message');
+        const logoutButton = document.getElementById('logout-button');
+        const cityInput = document.getElementById('city-input');
 
-            // Función para manejar el clic en cualquier parte del cuerpo
-            function handleClick() {
-                // Ocultar el mensaje inicial
-                initialPrompt.classList.add('hidden');
-                
-                // Mostrar y animar el mensaje de "Hola Mundo"
-                helloMessage.classList.remove('hidden', 'opacity-0', 'scale-90');
-                helloMessage.classList.add('opacity-100', 'scale-100');
+        // --- Funciones de la API de Gemini ---
 
-                // Desactivar el listener después del primer clic
-                body.removeEventListener('click', handleClick);
+        // Función con backoff exponencial para reintentos
+        async function fetchWithRetry(url, options, maxRetries = 5) {
+            let lastError = null;
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return await response.json();
+                } catch (error) {
+                    lastError = error;
+                    // Retraso exponencial con jitter
+                    const delay = Math.pow(2, i) * 1000 + Math.random() * 500;
+                    console.warn(`Intento ${i + 1} fallido. Reintentando en ${Math.round(delay / 1000)}s...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
             }
+            throw new Error(`Fallo al obtener datos después de ${maxRetries} intentos: ${lastError.message}`);
+        }
 
-            // Añadir el listener al cuerpo del documento
-            body.addEventListener('click', handleClick);
+        // Función para obtener el clima usando Gemini API con Google Search
+        async function fetchWeather(city) {
+            const apiKey = ""; // Dejar vacío para Canvas
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+            // Instrucción del sistema para guiar la respuesta del modelo
+            const systemPrompt = "Actúa como un experto meteorólogo amigable. Proporciona un resumen conciso y amigable del clima actual para la ciudad solicitada, incluyendo temperatura, condiciones principales y cualquier advertencia relevante. Usa emojis y el idioma español.";
+            
+            // Generamos las consultas de búsqueda en español e inglés para Google Search
+            const userQuery = `Dime el clima actual en ${city}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                // Habilitar Google Search Grounding para información real y actual
+                tools: [{ "google_search": {} }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            };
+
+            weatherOutput.innerHTML = `<p class="text-center text-indigo-400 animate-pulse">Buscando clima en **${city}**...</p>`;
+
+            try {
+                const result = await fetchWithRetry(apiUrl, options);
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const weatherText = candidate.content.parts[0].text;
+                    // Mostrar el resultado directamente
+                    weatherOutput.innerHTML = `<p>${weatherText}</p>`;
+
+                } else {
+                    weatherOutput.innerHTML = `<p class="text-center text-red-400">⚠️ No se pudo obtener el resumen del clima.</p>`;
+                }
+            } catch (error) {
+                console.error("Error al llamar a Gemini API:", error);
+                weatherOutput.innerHTML = `<p class="text-center text-red-400">❌ Error de conexión. Inténtalo de nuevo más tarde.</p>`;
+            }
+        }
+
+        // --- Lógica de la Aplicación (Login/Logout) ---
+
+        function showWeatherDashboard() {
+            // Animación para ocultar el login
+            loginCard.classList.remove('scale-100', 'opacity-100');
+            loginCard.classList.add('scale-90', 'opacity-0');
+            
+            // Retraso para la transición
+            setTimeout(() => {
+                loginCard.classList.add('hidden');
+                
+                // Mostrar la tarjeta del clima
+                weatherCard.classList.remove('hidden', 'scale-90', 'opacity-0');
+                weatherCard.classList.add('scale-100', 'opacity-100');
+                
+                // Cargar el clima para la ciudad predeterminada (o la última buscada)
+                fetchWeather(cityInput.value);
+            }, 500);
+        }
+
+        function showLoginForm() {
+            // Animación para ocultar el clima
+            weatherCard.classList.remove('scale-100', 'opacity-100');
+            weatherCard.classList.add('scale-90', 'opacity-0');
+            
+            // Retraso para la transición
+            setTimeout(() => {
+                weatherCard.classList.add('hidden');
+                
+                // Mostrar la tarjeta de login
+                loginCard.classList.remove('hidden', 'scale-90', 'opacity-0');
+                loginCard.classList.add('scale-100', 'opacity-100');
+            }, 500);
+        }
+
+
+        // Event Listener para el formulario de Login
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (username === VALID_USER && password === VALID_PASS) {
+                messageDisplay.classList.add('hidden');
+                showWeatherDashboard();
+            } else {
+                messageDisplay.textContent = "Credenciales incorrectas. Intenta con Pablo / Cari.";
+                messageDisplay.classList.remove('hidden');
+            }
         });
-    </script>
 
+        // Event Listener para el formulario de Búsqueda de Ciudad
+        cityForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const city = cityInput.value.trim();
+            if (city) {
+                fetchWeather(city);
+            } else {
+                weatherOutput.innerHTML = `<p class="text-center text-red-400">Por favor, introduce una ciudad para buscar.</p>`;
+            }
+        });
+
+        // Event Listener para Cerrar Sesión
+        logoutButton.addEventListener('click', showLoginForm);
+
+        // Inicializar el enfoque en el campo de usuario
+        document.getElementById('username').focus();
+
+    </script>
 </body>
 </html>
