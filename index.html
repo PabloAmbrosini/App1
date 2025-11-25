@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click para "Hola Mundo"</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Usamos Inter como fuente predeterminada */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            cursor: pointer; /* Indica que la pantalla es interactiva */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen">
+
+    <div id="message-container" class="text-center">
+        <!-- Mensaje Inicial, visible al cargar -->
+        <h2 id="initial-prompt" class="text-xl font-light text-gray-400 mb-8 animate-pulse">
+            Haz clic en cualquier parte de la pantalla para iniciar...
+        </h2>
+
+        <!-- Mensaje "Hola Mundo", inicialmente oculto -->
+        <div id="hello-message" class="hidden transform transition-all duration-500 scale-90 opacity-0">
+            <h1 class="text-7xl font-extrabold text-white mb-4 shadow-lg">
+                ¡Hola Mundo!
+            </h1>
+            <p class="text-indigo-400 text-lg">
+                ¡Se ha ejecutado el evento de clic!
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
+            const initialPrompt = document.getElementById('initial-prompt');
+            const helloMessage = document.getElementById('hello-message');
+
+            // Función para manejar el clic en cualquier parte del cuerpo
+            function handleClick() {
+                // Ocultar el mensaje inicial
+                initialPrompt.classList.add('hidden');
+                
+                // Mostrar y animar el mensaje de "Hola Mundo"
+                helloMessage.classList.remove('hidden', 'opacity-0', 'scale-90');
+                helloMessage.classList.add('opacity-100', 'scale-100');
+
+                // Desactivar el listener después del primer clic
+                body.removeEventListener('click', handleClick);
+            }
+
+            // Añadir el listener al cuerpo del documento
+            body.addEventListener('click', handleClick);
+        });
+    </script>
+
+</body>
+</html>
